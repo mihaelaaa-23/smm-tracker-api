@@ -7,6 +7,8 @@ import ClientForm from '../components/clients/ClientForm'
 import type { Client } from '../types'
 import ActiveFilters from '../components/ui/ActiveFilters'
 import FilterDropdown from '../components/ui/FilterDropdown'
+import ConfirmDialog from '../components/ui/ConfirmDialog'
+import { useConfirm } from '../hooks/useConfirm'
 
 type FilterStatus = 'all' | 'active' | 'inactive'
 type FilterPriority = 'all' | 'priority'
@@ -17,6 +19,7 @@ export default function ClientsPage() {
   const [editing, setEditing] = useState<Client | null>(null)
   const [filterStatus, setFilterStatus] = useState<FilterStatus>('all')
   const [filterPriority, setFilterPriority] = useState<FilterPriority>('all')
+  const { confirm, dialogProps } = useConfirm()
 
   const { data: clients = [], isLoading } = useQuery({
     queryKey: ['clients'],
@@ -54,10 +57,14 @@ export default function ClientsPage() {
     setShowForm(true)
   }
 
-  const handleDelete = (id: number) => {
-    if (confirm('Delete this client?')) {
-      deleteMutation.mutate(id)
-    }
+  const handleDelete = async (id: number) => {
+    const ok = await confirm({
+      title: 'Delete client',
+      message: 'This will permanently delete the client and cannot be undone.',
+      confirmLabel: 'Delete',
+      variant: 'danger',
+    })
+    if (ok) deleteMutation.mutate(id)
   }
 
   const handleTogglePriority = (id: number, priority: boolean) => {
@@ -140,6 +147,11 @@ export default function ClientsPage() {
           onClose={() => { setShowForm(false); setEditing(null) }}
         />
       )}
+
+      {dialogProps.open && (
+        <ConfirmDialog {...dialogProps} />
+      )}
+      
     </div>
   )
 }

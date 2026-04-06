@@ -5,6 +5,7 @@ import TasksPage from './pages/TasksPage'
 import PaymentsPage from './pages/PaymentsPage'
 import ClientDetailPage from './pages/ClientDetailPage'
 import DashboardPage from './pages/DashboardPage'
+import NotFoundPage from './pages/NotFoundPage'
 
 function App() {
   return (
@@ -18,6 +19,7 @@ function App() {
           <Route path="clients/:id" element={<ClientDetailPage />} />
           <Route path="dashboard" element={<DashboardPage />} />
         </Route>
+        <Route path="*" element={<NotFoundPage />} />
       </Routes>
     </BrowserRouter>
   )

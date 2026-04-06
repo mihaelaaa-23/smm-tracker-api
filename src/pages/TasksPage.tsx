@@ -7,6 +7,8 @@ import TaskForm from '../components/tasks/TaskForm'
 import type { Task } from '../types'
 import FilterDropdown from '../components/ui/FilterDropdown'
 import ActiveFilters from '../components/ui/ActiveFilters'
+import ConfirmDialog from '../components/ui/ConfirmDialog'
+import { useConfirm } from '../hooks/useConfirm'
 
 type FilterStatus = 'all' | 'todo' | 'in-progress' | 'done'
 type FilterPriority = 'all' | 'low' | 'medium' | 'high'
@@ -18,6 +20,7 @@ export default function TasksPage() {
   const [filterStatus, setFilterStatus] = useState<FilterStatus>('all')
   const [filterPriority, setFilterPriority] = useState<FilterPriority>('all')
   const [filterClient, setFilterClient] = useState<number | 'all'>('all')
+  const { confirm, dialogProps } = useConfirm()
 
   const { data: tasks = [], isLoading } = useQuery({
     queryKey: ['tasks'],
@@ -65,10 +68,14 @@ export default function TasksPage() {
     setShowForm(true)
   }
 
-  const handleDelete = (id: number) => {
-    if (confirm('Delete this task?')) {
-      deleteMutation.mutate(id)
-    }
+  const handleDelete = async (id: number) => {
+    const ok = await confirm({
+      title: 'Delete task',
+      message: 'This will permanently delete the task.',
+      confirmLabel: 'Delete',
+      variant: 'danger',
+    })
+    if (ok) deleteMutation.mutate(id)
   }
 
   const handleStatusChange = (id: number, status: Task['status']) => {
@@ -171,6 +178,11 @@ export default function TasksPage() {
           onClose={() => { setShowForm(false); setEditing(null) }}
         />
       )}
+
+      {dialogProps.open && (
+        <ConfirmDialog {...dialogProps} />
+      )}
+
     </div>
   )
 }

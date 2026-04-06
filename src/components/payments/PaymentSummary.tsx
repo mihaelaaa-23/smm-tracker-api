@@ -37,7 +37,7 @@ export default function PaymentSummary({ payments, viewMonth, viewYear, onNaviga
     .reduce((sum, p) => sum + p.amount, 0)
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 md:left-64 z-40 bg-white/95 dark:bg-black/95 backdrop-blur-md border-t border-gray-100 dark:border-zinc-800 px-6 py-3 flex items-center gap-4 flex-wrap">
+    <div className="fixed bottom-16 md:bottom-0 left-0 right-0 md:left-64 z-40 bg-white/95 dark:bg-black/95 backdrop-blur-md border-t border-gray-100 dark:border-zinc-800 px-4 py-3 flex items-center gap-3 flex-wrap overflow-x-auto">
 
       {/* Month navigation */}
       <div className="flex items-center gap-2 shrink-0">

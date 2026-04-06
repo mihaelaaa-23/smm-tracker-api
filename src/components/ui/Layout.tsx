@@ -1,6 +1,7 @@
 import { Outlet } from 'react-router-dom'
 import Sidebar from './Sidebar'
 import Navbar from './Navbar'
+import MobileNav from './MobileNav'
 import { useTheme } from '../../hooks/useTheme'
 
 export default function Layout() {
@@ -12,10 +13,11 @@ export default function Layout() {
         <Navbar toggleTheme={toggleTheme} isDark={isDark} />
         <div className="flex">
           <Sidebar />
-          <main className="flex-1 p-10 ml-0 md:ml-64 mt-16">
+          <main className="flex-1 p-8 ml-0 md:ml-64 mt-16 pb-24 md:pb-8">
             <Outlet />
           </main>
         </div>
+        <MobileNav />
       </div>
     </div>
   )

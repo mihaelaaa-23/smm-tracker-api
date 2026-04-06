@@ -5,6 +5,8 @@ import { ArrowLeft, Star, Plus, Pencil, Trash2, AlertTriangle } from 'lucide-rea
 import { clientsDB, tasksDB, paymentsDB, formatPeriod } from '../db'
 import TaskForm from '../components/tasks/TaskForm'
 import type { Task } from '../types'
+import ConfirmDialog from '../components/ui/ConfirmDialog'
+import { useConfirm } from '../hooks/useConfirm'
 
 const platformColors: Record<string, string> = {
     Instagram: 'bg-pink-50 text-pink-600 dark:bg-pink-950/50 dark:text-pink-400',
@@ -30,6 +32,7 @@ export default function ClientDetailPage() {
     const navigate = useNavigate()
     const qc = useQueryClient()
     const clientId = Number(id)
+    const { confirm, dialogProps } = useConfirm()
 
     const [showTaskForm, setShowTaskForm] = useState(false)
     const [editingTask, setEditingTask] = useState<Task | null>(null)
@@ -184,9 +187,15 @@ export default function ClientDetailPage() {
                                         <Pencil size={13} />
                                     </button>
                                     <button
-                                        onClick={() => { if (confirm('Delete this task?')) deleteTaskMutation.mutate(task.id!) }}
-                                        className="p-1.5 rounded-lg text-gray-300 dark:text-gray-500 hover:text-red-400 transition-all"
-                                    >
+                                        onClick={async () => {
+                                            const ok = await confirm({
+                                                title: 'Delete task',
+                                                message: 'This will permanently delete the task.',
+                                                confirmLabel: 'Delete',
+                                                variant: 'danger',
+                                            })
+                                            if (ok) deleteTaskMutation.mutate(task.id!)
+                                        }}                                    >
                                         <Trash2 size={13} />
                                     </button>
                                 </div>
@@ -262,6 +271,9 @@ export default function ClientDetailPage() {
                     onSubmit={handleTaskSubmit}
                     onClose={() => { setShowTaskForm(false); setEditingTask(null) }}
                 />
+            )}
+            {dialogProps.open && (
+                <ConfirmDialog {...dialogProps} />
             )}
         </div>
     )
