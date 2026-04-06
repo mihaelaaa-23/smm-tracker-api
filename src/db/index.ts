@@ -7,10 +7,10 @@ const db = new Dexie('SMMTrackerDB') as Dexie & {
   payments: EntityTable<Payment, 'id'>
 }
 
-db.version(1).stores({
+db.version(2).stores({
   clients: '++id, name, status, priority, createdAt',
   tasks: '++id, clientId, status, priority, deadline, createdAt',
-  payments: '++id, clientId, status, date',
+  payments: '++id, clientId, status, month, year, date',
 })
 
 // Client operations
@@ -38,6 +38,10 @@ export const paymentsDB = {
   add: (payment: Omit<Payment, 'id'>) => db.payments.add(payment),
   update: (id: number, changes: Partial<Payment>) => db.payments.update(id, changes),
   delete: (id: number) => db.payments.delete(id),
+}
+
+export const formatPeriod = (month: number, year: number): string => {
+  return new Date(year, month - 1).toLocaleString('en-US', { month: 'long', year: 'numeric' })
 }
 
 export { db }

@@ -27,7 +27,8 @@ export interface Payment {
   clientId: number;
   amount: number;
   currency: 'MDL' | 'USD';
-  period: string;
+  month: number;    // 1-12
+  year: number;     // ex: 2026
   status: 'paid' | 'unpaid' | 'partial';
   date: Date;
   notes: string;
