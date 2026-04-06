@@ -8,9 +8,17 @@
     href="https://fonts.googleapis.com/css2?family=Urbanist:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap"
     rel="stylesheet">
   <meta charset="UTF-8" />
+  <script>
+    (function() {
+      var redirect = new URLSearchParams(window.location.search).get('redirect');
+      if (redirect) {
+        window.history.replaceState(null, null, redirect);
+      }
+    })();
+  </script>
   <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>smm-tracker</title>
+  <title>SMM Tracker</title>
 </head>
 
 <body>
