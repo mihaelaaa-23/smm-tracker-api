@@ -1,10 +1,12 @@
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { Plus, Star } from 'lucide-react'
+import { Plus } from 'lucide-react'
 import { clientsDB } from '../db'
 import ClientList from '../components/clients/ClientList'
 import ClientForm from '../components/clients/ClientForm'
 import type { Client } from '../types'
+import ActiveFilters from '../components/ui/ActiveFilters'
+import FilterDropdown from '../components/ui/FilterDropdown'
 
 type FilterStatus = 'all' | 'active' | 'inactive'
 type FilterPriority = 'all' | 'priority'
@@ -79,7 +81,7 @@ export default function ClientsPage() {
         </div>
         <button
           onClick={() => { setEditing(null); setShowForm(true) }}
-          className="flex items-center gap-2 px-4 py-2.5 bg-purple-600 hover:bg-purple-700 text-white text-sm font-medium rounded-xl transition-colors"
+          className="flex items-center gap-2 px-4 py-2.5 bg-gray-900 hover:bg-gray-800 text-white text-sm font-medium rounded-xl transition-colors"
         >
           <Plus size={16} />
           Add Client
@@ -88,35 +90,39 @@ export default function ClientsPage() {
 
       {/* Filters */}
       <div className="flex flex-wrap gap-2">
-        {(['all', 'active', 'inactive'] as FilterStatus[]).map(s => (
-          <button
-            key={s}
-            onClick={() => setFilterStatus(s)}
-            className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors capitalize ${
-              filterStatus === s
-                ? 'bg-purple-600 text-white'
-                : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700'
-            }`}
-          >
-            {s}
-          </button>
-        ))}
-        <button
-          onClick={() => setFilterPriority(prev => prev === 'all' ? 'priority' : 'all')}
-          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
-            filterPriority === 'priority'
-              ? 'bg-yellow-500 text-white'
-              : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700'
-          }`}
-        >
-          <Star size={12} fill={filterPriority === 'priority' ? 'currentColor' : 'none'} />
-          Priority
-        </button>
+        <FilterDropdown
+          label="Status"
+          value={filterStatus}
+          onChange={v => setFilterStatus(v as FilterStatus)}
+          options={[
+            { value: 'all', label: 'All statuses' },
+            { value: 'active', label: 'Active' },
+            { value: 'inactive', label: 'Inactive' },
+          ]}
+        />
+        <FilterDropdown
+          label="Priority"
+          value={filterPriority}
+          onChange={v => setFilterPriority(v as FilterPriority)}
+          options={[
+            { value: 'all', label: 'All' },
+            { value: 'priority', label: 'Priority only' },
+          ]}
+        />
       </div>
+
+      {/* Active filters */}
+      <ActiveFilters
+        filters={[
+          ...(filterStatus !== 'all' ? [{ label: filterStatus, onRemove: () => setFilterStatus('all') }] : []),
+          ...(filterPriority !== 'all' ? [{ label: 'Priority', onRemove: () => setFilterPriority('all') }] : []),
+        ]}
+        onClearAll={() => { setFilterStatus('all'); setFilterPriority('all') }}
+      />
 
       {/* List */}
       {isLoading ? (
-        <div className="text-sm text-gray-400 dark:text-gray-600">Loading...</div>
+        <div className="text-sm text-gray-400 dark:text-gray-400">Loading...</div>
       ) : (
         <ClientList
           clients={filtered}

@@ -7,16 +7,16 @@ interface NavbarProps {
 
 export default function Navbar({ toggleTheme, isDark }: NavbarProps) {
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 h-16 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between px-6 shadow-sm">
-      <span className="text-xl font-bold text-purple-600 dark:text-purple-400">
+    <header className="fixed top-0 left-0 right-0 z-50 h-16 bg-white dark:bg-black border-b border-gray-100 dark:border-zinc-800 flex items-center justify-between px-8">
+      <span className="text-base font-bold tracking-widest uppercase text-gray-900 dark:text-white">
         SMM Tracker
       </span>
       <button
         onClick={toggleTheme}
-        className="p-2 rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+        className="p-2 rounded-full text-gray-400 dark:text-gray-500 hover:text-gray-900 dark:hover:text-white transition-colors"
         aria-label="Toggle theme"
       >
-        {isDark ? <Sun size={18} /> : <Moon size={18} />}
+        {isDark ? <Sun size={16} /> : <Moon size={16} />}
       </button>
     </header>
   )

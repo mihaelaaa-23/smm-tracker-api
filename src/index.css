@@ -1,2 +1,6 @@
 @import "tailwindcss";
 @variant dark (&:where(.dark, .dark *));
+
+* {
+  font-family: 'Urbanist', sans-serif;
+}

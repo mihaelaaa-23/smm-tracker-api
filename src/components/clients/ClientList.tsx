@@ -11,7 +11,7 @@ interface ClientListProps {
 export default function ClientList({ clients, onDelete, onTogglePriority, onEdit }: ClientListProps) {
   if (clients.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center py-20 text-gray-400 dark:text-gray-600">
+      <div className="flex flex-col items-center justify-center py-20 text-gray-400 dark:text-gray-400">
         <p className="text-lg font-medium">No clients yet</p>
         <p className="text-sm mt-1">Add your first client to get started</p>
       </div>

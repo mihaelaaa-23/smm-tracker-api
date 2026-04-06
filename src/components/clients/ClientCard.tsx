@@ -1,4 +1,4 @@
-import { Trash2, Star } from 'lucide-react'
+import { Trash2, Star, Pencil } from 'lucide-react'
 import type { Client } from '../../types'
 
 interface ClientCardProps {
@@ -9,51 +9,55 @@ interface ClientCardProps {
 }
 
 const platformColors: Record<string, string> = {
-  Instagram: 'bg-pink-100 text-pink-700 dark:bg-pink-900/30 dark:text-pink-300',
-  TikTok: 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300',
-  Facebook: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300',
-  LinkedIn: 'bg-sky-100 text-sky-700 dark:bg-sky-900/30 dark:text-sky-300',
+  Instagram: 'bg-pink-50 text-pink-600 dark:bg-pink-950/50 dark:text-pink-400',
+  TikTok: 'bg-gray-100 text-gray-600 dark:bg-zinc-800 dark:text-gray-300',
+  Facebook: 'bg-blue-50 text-blue-600 dark:bg-blue-950/50 dark:text-blue-400',
+  LinkedIn: 'bg-sky-50 text-sky-600 dark:bg-sky-950/50 dark:text-sky-400',
 }
 
 export default function ClientCard({ client, onDelete, onTogglePriority, onEdit }: ClientCardProps) {
   return (
-    <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-5 flex flex-col gap-4 shadow-sm hover:shadow-md transition-shadow">
-      
+    <div className="group bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 rounded-2xl p-6 flex flex-col gap-4 shadow-[0_1px_4px_rgba(0,0,0,0.06)] dark:shadow-[0_1px_4px_rgba(0,0,0,0.3)] hover:shadow-[0_8px_30px_rgba(0,0,0,0.10)] dark:hover:shadow-[0_8px_30px_rgba(0,0,0,0.5)] hover:-translate-y-0.5 transition-all duration-200">
+
       {/* Header */}
       <div className="flex items-start justify-between">
-        <div className="flex flex-col gap-1">
+        <div className="flex flex-col gap-0.5">
           <h3
-            className="text-base font-semibold text-gray-900 dark:text-white cursor-pointer hover:text-purple-600 dark:hover:text-purple-400 transition-colors"
+            className="text-sm font-semibold text-gray-900 dark:text-white cursor-pointer hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
             onClick={() => onEdit(client)}
           >
             {client.name}
           </h3>
-          <span className="text-sm text-gray-500 dark:text-gray-400">{client.brand}</span>
+          <span className="text-xs text-gray-400 dark:text-gray-400 font-medium">{client.brand}</span>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
           <button
             onClick={() => onTogglePriority(client.id!, !client.priority)}
-            className={`p-1.5 rounded-lg transition-colors ${
+            className={`p-1.5 rounded-lg transition-all ${
               client.priority
-                ? 'text-yellow-500 bg-yellow-50 dark:bg-yellow-900/20'
-                : 'text-gray-400 hover:text-yellow-500 hover:bg-yellow-50 dark:hover:bg-yellow-900/20'
+                ? 'text-amber-400 opacity-100!'
+                : 'text-gray-300 dark:text-gray-500 hover:text-amber-400'
             }`}
-            aria-label="Toggle priority"
           >
-            <Star size={16} fill={client.priority ? 'currentColor' : 'none'} />
+            <Star size={14} fill={client.priority ? 'currentColor' : 'none'} />
+          </button>
+          <button
+            onClick={() => onEdit(client)}
+            className="p-1.5 rounded-lg text-gray-300 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-all"
+          >
+            <Pencil size={13} />
           </button>
           <button
             onClick={() => onDelete(client.id!)}
-            className="p-1.5 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
-            aria-label="Delete client"
+            className="p-1.5 rounded-lg text-gray-300 dark:text-gray-500 hover:text-red-400 transition-all"
           >
-            <Trash2 size={16} />
+            <Trash2 size={13} />
           </button>
         </div>
       </div>
 
       {/* Platforms */}
-      <div className="flex flex-wrap gap-2">
+      <div className="flex flex-wrap gap-1.5">
         {client.platforms.map(platform => (
           <span
             key={platform}
@@ -65,16 +69,16 @@ export default function ClientCard({ client, onDelete, onTogglePriority, onEdit 
       </div>
 
       {/* Footer */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between pt-3 border-t border-gray-50 dark:border-zinc-800">
         <span className={`text-xs font-medium px-2.5 py-1 rounded-full ${
           client.status === 'active'
-            ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300'
-            : 'bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-400'
+            ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-950/50 dark:text-emerald-400'
+            : 'bg-gray-100 text-gray-400 dark:bg-zinc-800 dark:text-gray-400'
         }`}>
           {client.status === 'active' ? 'Active' : 'Inactive'}
         </span>
         {client.notes && (
-          <span className="text-xs text-gray-400 dark:text-gray-500 truncate max-w-[60%]">
+          <span className="text-xs text-gray-300 dark:text-gray-500 truncate max-w-[55%]">
             {client.notes}
           </span>
         )}

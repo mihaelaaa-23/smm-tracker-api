@@ -30,9 +30,9 @@ export default function ClientForm({ initial, onSubmit, onClose }: ClientFormPro
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4">
-      <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-xl w-full max-w-md p-6 flex flex-col gap-5">
-        
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm px-4">
+      <div className="bg-white dark:bg-zinc-900 rounded-2xl shadow-xl w-full max-w-md p-8 flex flex-col gap-6 max-h-[90vh] overflow-y-auto">
+
         {/* Header */}
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
@@ -40,7 +40,7 @@ export default function ClientForm({ initial, onSubmit, onClose }: ClientFormPro
           </h2>
           <button
             onClick={onClose}
-            className="p-2 rounded-lg text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+            className="p-2 rounded-lg text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-zinc-800 transition-colors"
           >
             <X size={18} />
           </button>
@@ -53,7 +53,7 @@ export default function ClientForm({ initial, onSubmit, onClose }: ClientFormPro
             value={name}
             onChange={e => setName(e.target.value)}
             placeholder="e.g. Ana Constantin"
-            className="px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+            className="px-4 py-2.5 rounded-xl border border-gray-200 dark:border-zinc-700 bg-gray-50 dark:bg-zinc-800 text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-1 focus:ring-white/20"
           />
         </div>
 
@@ -64,7 +64,7 @@ export default function ClientForm({ initial, onSubmit, onClose }: ClientFormPro
             value={brand}
             onChange={e => setBrand(e.target.value)}
             placeholder="e.g. Florăria Iris"
-            className="px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+            className="px-4 py-2.5 rounded-xl border border-gray-200 dark:border-zinc-700 bg-gray-50 dark:bg-zinc-800 text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-1 focus:ring-white/20"
           />
         </div>
 
@@ -78,8 +78,8 @@ export default function ClientForm({ initial, onSubmit, onClose }: ClientFormPro
                 onClick={() => togglePlatform(p)}
                 className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
                   platforms.includes(p)
-                    ? 'bg-purple-600 text-white'
-                    : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700'
+                    ? 'bg-gray-900 dark:bg-white text-white dark:text-gray-900'
+                    : 'bg-gray-100 dark:bg-zinc-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-zinc-700'
                 }`}
               >
                 {p}
@@ -98,8 +98,8 @@ export default function ClientForm({ initial, onSubmit, onClose }: ClientFormPro
                 onClick={() => setStatus(s)}
                 className={`flex-1 py-2 rounded-xl text-sm font-medium transition-colors capitalize ${
                   status === s
-                    ? 'bg-purple-600 text-white'
-                    : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700'
+                    ? 'bg-gray-900 dark:bg-white text-white dark:text-gray-900'
+                    : 'bg-gray-100 dark:bg-zinc-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-zinc-700'
                 }`}
               >
                 {s}
@@ -114,11 +114,11 @@ export default function ClientForm({ initial, onSubmit, onClose }: ClientFormPro
           <button
             onClick={() => setPriority(prev => !prev)}
             className={`w-12 h-6 rounded-full transition-colors ${
-              priority ? 'bg-purple-600' : 'bg-gray-200 dark:bg-gray-700'
+              priority ? 'bg-gray-900 dark:bg-white' : 'bg-gray-200 dark:bg-zinc-700'
             }`}
           >
-            <span className={`block w-5 h-5 bg-white rounded-full shadow transition-transform mx-0.5 ${
-              priority ? 'translate-x-6' : 'translate-x-0'
+            <span className={`block w-5 h-5 rounded-full shadow transition-transform mx-0.5 ${
+              priority ? 'translate-x-6 bg-white dark:bg-zinc-900' : 'translate-x-0 bg-white dark:bg-gray-400'
             }`} />
           </button>
         </div>
@@ -131,7 +131,7 @@ export default function ClientForm({ initial, onSubmit, onClose }: ClientFormPro
             onChange={e => setNotes(e.target.value)}
             placeholder="Any additional notes..."
             rows={3}
-            className="px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 resize-none"
+            className="px-4 py-2.5 rounded-xl border border-gray-200 dark:border-zinc-700 bg-gray-50 dark:bg-zinc-800 text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-1 focus:ring-white/20 resize-none"
           />
         </div>
 
@@ -139,14 +139,14 @@ export default function ClientForm({ initial, onSubmit, onClose }: ClientFormPro
         <div className="flex gap-3 pt-1">
           <button
             onClick={onClose}
-            className="flex-1 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 text-sm font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+            className="flex-1 py-2.5 rounded-xl border border-gray-200 dark:border-zinc-700 text-sm font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-zinc-800 transition-colors"
           >
             Cancel
           </button>
           <button
             onClick={handleSubmit}
             disabled={!name.trim() || !brand.trim()}
-            className="flex-1 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-medium transition-colors"
+            className="flex-1 py-2.5 rounded-xl bg-gray-900 dark:bg-white hover:bg-gray-800 dark:hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed text-white dark:text-gray-900 text-sm font-medium transition-colors"
           >
             {initial ? 'Save Changes' : 'Add Client'}
           </button>
