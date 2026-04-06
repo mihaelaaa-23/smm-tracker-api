@@ -53,7 +53,7 @@ A client-side web application for freelance social media managers to track clien
 
 | Layer | Technology |
 |---|---|
-| Framework | React 18 + TypeScript |
+| Framework | React + TypeScript |
 | Build tool | Vite 8 |
 | Styling | Tailwind CSS v4 |
 | Routing | React Router v6 |
@@ -88,6 +88,7 @@ A client-side web application for freelance social media managers to track clien
 ---
 
 ## Project Structure
+```
 src/
 ├── components/
 │   ├── ui/          # Layout, Navbar, Sidebar, MobileNav, FilterDropdown, ActiveFilters, ConfirmDialog
@@ -98,7 +99,7 @@ src/
 ├── db/              # Dexie schema + all DB operations + formatPeriod helper
 ├── hooks/           # useTheme, useConfirm
 └── types/           # Client, Task, Payment interfaces
-
+```
 ---
 
 ## Git Workflow
