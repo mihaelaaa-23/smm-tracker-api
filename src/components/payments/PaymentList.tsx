@@ -1,5 +1,6 @@
-import { Trash2, Pencil } from 'lucide-react'
+import { Trash2, Pencil, Mail } from 'lucide-react'
 import type { Payment, Client } from '../../types'
+import { formatPeriod } from '../../db'
 
 interface PaymentListProps {
     payments: Payment[]
@@ -39,6 +40,15 @@ export default function PaymentList({ payments, clients, onDelete, onEdit }: Pay
         )
     }
 
+    const handleEmailReminder = (payment: Payment, client: Client | undefined) => {
+        if (!client) return
+        const subject = encodeURIComponent(`Payment reminder — ${formatPeriod(payment.month, payment.year)}`)
+        const body = encodeURIComponent(
+            `Hi ${client.name},\n\nThis is a friendly reminder that your payment of ${payment.amount.toLocaleString()} ${payment.currency} for ${formatPeriod(payment.month, payment.year)} is still outstanding.\n\nPlease let me know when you've processed it.\n\nThank you!`
+        )
+        window.open(`mailto:?subject=${subject}&body=${body}`)
+    }
+
     return (
         <div className="bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 rounded-2xl overflow-hidden shadow-[0_1px_4px_rgba(0,0,0,0.06)] dark:shadow-[0_1px_4px_rgba(0,0,0,0.3)]">
             {payments.map((payment, i) => {
@@ -54,20 +64,20 @@ export default function PaymentList({ payments, clients, onDelete, onEdit }: Pay
                     >
                         {/* Client info */}
                         <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-2">
-                                <span className="text-sm font-semibold text-gray-900 dark:text-white truncate">
-                                    {client?.name ?? 'Unknown'}
-                                </span>
+                            <p className="text-sm font-semibold text-gray-900 dark:text-white truncate">
+                                {client?.name ?? 'Unknown'}
+                            </p>
+                            <div className="flex items-center gap-2 mt-0.5">
+                                <p className="text-xs text-gray-400 dark:text-gray-500 truncate">
+                                    {client?.brand}
+                                    {payment.date && ` · ${new Date(payment.date).toLocaleDateString('en-GB')}`}
+                                </p>
                                 {payment.status === 'unpaid' && new Date(payment.date) < new Date() && (
                                     <span className="text-xs font-semibold text-red-500 bg-red-50 dark:bg-red-950/30 px-1.5 py-0.5 rounded shrink-0">
-                                        overdue
+                                        {Math.floor((new Date().getTime() - new Date(payment.date).getTime()) / (1000 * 60 * 60 * 24))}d overdue
                                     </span>
                                 )}
                             </div>
-                            <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5 truncate">
-                                {client?.brand}
-                                {payment.date && ` · ${new Date(payment.date).toLocaleDateString('en-GB')}`}
-                            </p>
                         </div>
 
                         {/* Amount */}
@@ -98,16 +108,25 @@ export default function PaymentList({ payments, clients, onDelete, onEdit }: Pay
                         </div>
 
                         {/* Actions */}
-                        <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
+                        <div className="w-20 flex items-center justify-end gap-0.5 shrink-0">
+                            {payment.status !== 'paid' && (
+                                <button
+                                    onClick={() => handleEmailReminder(payment, client)}
+                                    className="p-1.5 rounded-lg text-gray-300 dark:text-gray-500 hover:text-blue-500 dark:hover:text-blue-400 transition-all opacity-0 group-hover:opacity-100"
+                                    title="Send payment reminder"
+                                >
+                                    <Mail size={13} />
+                                </button>
+                            )}
                             <button
                                 onClick={() => onEdit(payment)}
-                                className="p-1.5 rounded-lg text-gray-300 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-all"
+                                className="p-1.5 rounded-lg text-gray-300 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-all opacity-0 group-hover:opacity-100"
                             >
                                 <Pencil size={13} />
                             </button>
                             <button
                                 onClick={() => onDelete(payment.id!)}
-                                className="p-1.5 rounded-lg text-gray-300 dark:text-gray-500 hover:text-red-400 transition-all"
+                                className="p-1.5 rounded-lg text-gray-300 dark:text-gray-500 hover:text-red-400 transition-all opacity-0 group-hover:opacity-100"
                             >
                                 <Trash2 size={13} />
                             </button>

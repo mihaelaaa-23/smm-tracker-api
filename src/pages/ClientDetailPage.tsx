@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { ArrowLeft, Star, Plus, Pencil, Trash2 } from 'lucide-react'
+import { ArrowLeft, Star, Plus, Pencil, Trash2, AlertTriangle } from 'lucide-react'
 import { clientsDB, tasksDB, paymentsDB, formatPeriod } from '../db'
 import TaskForm from '../components/tasks/TaskForm'
 import type { Task } from '../types'
@@ -117,8 +117,8 @@ export default function ClientDetailPage() {
                         <p className="text-sm text-gray-500 dark:text-gray-400">{client.brand}</p>
                         <div className="flex items-center gap-2 flex-wrap">
                             <span className={`text-xs font-medium px-2.5 py-1 rounded-full ${client.status === 'active'
-                                    ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-950/50 dark:text-emerald-400'
-                                    : 'bg-gray-100 text-gray-400 dark:bg-zinc-800 dark:text-gray-500'
+                                ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-950/50 dark:text-emerald-400'
+                                : 'bg-gray-100 text-gray-400 dark:bg-zinc-800 dark:text-gray-500'
                                 }`}>
                                 {client.status === 'active' ? 'Active' : 'Inactive'}
                             </span>
@@ -196,7 +196,20 @@ export default function ClientDetailPage() {
                 )}
             </div>
 
-            <div className="border-t border-gray-100 dark:border-zinc-800" />
+            {/* Blocked invoice indicator */}
+            {tasks.some(t => t.needsApproval && t.status !== 'done') && (
+                <div className="flex items-center gap-3 px-5 py-4 bg-orange-50 dark:bg-orange-950/20 border border-orange-100 dark:border-orange-900/30 rounded-2xl">
+                    <div className="w-8 h-8 rounded-xl bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center shrink-0">
+                        <AlertTriangle size={15} className="text-orange-600 dark:text-orange-400" />
+                    </div>
+                    <div>
+                        <p className="text-sm font-semibold text-orange-700 dark:text-orange-300">Invoice blocked</p>
+                        <p className="text-xs text-orange-500 dark:text-orange-400 mt-0.5">
+                            {tasks.filter(t => t.needsApproval && t.status !== 'done').length} task{tasks.filter(t => t.needsApproval && t.status !== 'done').length > 1 ? 's' : ''} pending approval before invoicing
+                        </p>
+                    </div>
+                </div>
+            )}
 
             {/* Payments section */}
             <div className="flex flex-col gap-4">
