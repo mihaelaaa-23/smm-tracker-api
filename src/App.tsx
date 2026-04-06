@@ -3,6 +3,7 @@ import Layout from './components/ui/Layout'
 import ClientsPage from './pages/ClientsPage'
 import TasksPage from './pages/TasksPage'
 import PaymentsPage from './pages/PaymentsPage'
+import ClientDetailPage from './pages/ClientDetailPage'
 
 function App() {
   return (
@@ -13,6 +14,7 @@ function App() {
           <Route path="clients" element={<ClientsPage />} />
           <Route path="tasks" element={<TasksPage />} />
           <Route path="payments" element={<PaymentsPage />} />
+          <Route path="clients/:id" element={<ClientDetailPage />} />
         </Route>
       </Routes>
     </BrowserRouter>

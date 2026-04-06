@@ -1,5 +1,6 @@
 import { Trash2, Star, Pencil } from 'lucide-react'
 import type { Client } from '../../types'
+import { useNavigate } from 'react-router-dom'
 
 interface ClientCardProps {
   client: Client
@@ -16,6 +17,7 @@ const platformColors: Record<string, string> = {
 }
 
 export default function ClientCard({ client, onDelete, onTogglePriority, onEdit }: ClientCardProps) {
+  const navigate = useNavigate()
   return (
     <div className="group bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 rounded-2xl p-6 flex flex-col gap-4 shadow-[0_1px_4px_rgba(0,0,0,0.06)] dark:shadow-[0_1px_4px_rgba(0,0,0,0.3)] hover:shadow-[0_8px_30px_rgba(0,0,0,0.10)] dark:hover:shadow-[0_8px_30px_rgba(0,0,0,0.5)] hover:-translate-y-0.5 transition-all duration-200">
 
@@ -24,7 +26,7 @@ export default function ClientCard({ client, onDelete, onTogglePriority, onEdit 
         <div className="flex flex-col gap-0.5">
           <h3
             className="text-sm font-semibold text-gray-900 dark:text-white cursor-pointer hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
-            onClick={() => onEdit(client)}
+            onClick={() => navigate(`/clients/${client.id}`)}
           >
             {client.name}
           </h3>
