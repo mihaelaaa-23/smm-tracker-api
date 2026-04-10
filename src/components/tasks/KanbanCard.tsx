@@ -72,7 +72,7 @@ export default function KanbanCard({ task, client, onEdit, onDelete, isDragging 
 
             {/* Client */}
             {client && (
-                <p className="text-xs text-gray-400 dark:text-gray-500">{client.name}</p>
+                <p className="text-xs text-gray-400 dark:text-gray-500">{client.brand}</p>
             )}
 
             {/* Footer */}

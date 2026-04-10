@@ -13,6 +13,9 @@ const platformColors: Record<string, string> = {
     TikTok: 'bg-gray-100 text-gray-600 dark:bg-zinc-800 dark:text-gray-300',
     Facebook: 'bg-blue-50 text-blue-600 dark:bg-blue-950/50 dark:text-blue-400',
     LinkedIn: 'bg-sky-50 text-sky-600 dark:bg-sky-950/50 dark:text-sky-400',
+    YouTube: 'bg-red-50 text-red-600 dark:bg-red-950/50 dark:text-red-400',
+    Telegram: 'bg-cyan-50 text-cyan-600 dark:bg-cyan-950/50 dark:text-cyan-400',
+    Pinterest: 'bg-rose-50 text-rose-600 dark:bg-rose-950/50 dark:text-rose-400',
 }
 
 const priorityStyles: Record<Task['priority'], string> = {
@@ -112,12 +115,12 @@ export default function ClientDetailPage() {
                 <div className="flex items-start justify-between">
                     <div className="flex flex-col gap-2">
                         <div className="flex items-center gap-3">
-                            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{client.name}</h1>
+                            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{client.brand}</h1>
                             {client.priority && (
                                 <Star size={16} className="text-amber-400" fill="currentColor" />
                             )}
                         </div>
-                        <p className="text-sm text-gray-500 dark:text-gray-400">{client.brand}</p>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">{client.name}</p>
                         <div className="flex items-center gap-2 flex-wrap">
                             <span className={`text-xs font-medium px-2.5 py-1 rounded-full ${client.status === 'active'
                                 ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-950/50 dark:text-emerald-400'

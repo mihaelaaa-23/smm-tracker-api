@@ -57,7 +57,7 @@ export default function TaskList({ tasks, clients, onDelete, onEdit, onStatusCha
               </p>
               <div className="flex items-center gap-2 mt-0.5">
                 <p className="text-xs text-gray-400 dark:text-gray-500 truncate">
-                  {client?.name}
+                  {client?.brand}
                   {task.needsApproval && ' · Needs approval'}
                 </p>
               </div>

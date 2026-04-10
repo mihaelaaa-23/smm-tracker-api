@@ -2,7 +2,7 @@ export interface Client {
   id?: number;
   name: string;
   brand: string;
-  platforms: ('Instagram' | 'TikTok' | 'Facebook' | 'LinkedIn')[];
+  platforms: ('Instagram' | 'TikTok' | 'Facebook' | 'LinkedIn' | 'YouTube' | 'Telegram' | 'Pinterest')[];
   status: 'active' | 'inactive';
   priority: boolean;
   notes: string;

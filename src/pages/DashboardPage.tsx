@@ -252,7 +252,7 @@ export default function DashboardPage() {
                                     <div key={task.id} className="flex items-center gap-3 py-3">
                                         <div className="flex-1 min-w-0">
                                             <p className="text-sm font-medium text-gray-900 dark:text-white truncate">{task.title}</p>
-                                            <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">{client?.name}</p>
+                                            <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">{client?.brand}</p>
                                         </div>
                                         <span className={`text-xs font-medium px-2.5 py-1 rounded-full capitalize shrink-0 ${priorityStyles[task.priority]}`}>
                                             {task.priority}
@@ -282,9 +282,9 @@ export default function DashboardPage() {
                                     <div key={payment.id} className="flex items-center gap-3 py-3">
                                         <div className="flex-1 min-w-0">
                                             <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
-                                                {client?.name ?? 'Unknown'}
+                                                {client?.brand ?? 'Unknown'}
                                             </p>
-                                            <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">{client?.brand}</p>
+                                            <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">{client?.name}</p>
                                         </div>
                                         <span className="text-sm font-bold text-gray-900 dark:text-white shrink-0">
                                             {payment.amount.toLocaleString()}

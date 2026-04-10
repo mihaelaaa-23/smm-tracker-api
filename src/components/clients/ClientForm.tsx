@@ -8,7 +8,7 @@ interface ClientFormProps {
   onClose: () => void
 }
 
-const PLATFORMS = ['Instagram', 'TikTok', 'Facebook', 'LinkedIn'] as const
+const PLATFORMS = ['Instagram', 'TikTok', 'Facebook', 'LinkedIn', 'YouTube', 'Telegram', 'Pinterest'] as const
 
 export default function ClientForm({ initial, onSubmit, onClose }: ClientFormProps) {
   const [name, setName] = useState(initial?.name ?? '')

@@ -14,6 +14,9 @@ const platformColors: Record<string, string> = {
   TikTok: 'bg-gray-100 text-gray-600 dark:bg-zinc-800 dark:text-gray-300',
   Facebook: 'bg-blue-50 text-blue-600 dark:bg-blue-950/50 dark:text-blue-400',
   LinkedIn: 'bg-sky-50 text-sky-600 dark:bg-sky-950/50 dark:text-sky-400',
+  YouTube: 'bg-red-50 text-red-600 dark:bg-red-950/50 dark:text-red-400',
+  Telegram: 'bg-cyan-50 text-cyan-600 dark:bg-cyan-950/50 dark:text-cyan-400',
+  Pinterest: 'bg-rose-50 text-rose-600 dark:bg-rose-950/50 dark:text-rose-400',
 }
 
 export default function ClientCard({ client, onDelete, onTogglePriority, onEdit }: ClientCardProps) {
@@ -28,9 +31,9 @@ export default function ClientCard({ client, onDelete, onTogglePriority, onEdit 
             className="text-sm font-semibold text-gray-900 dark:text-white cursor-pointer hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
             onClick={() => navigate(`/clients/${client.id}`)}
           >
-            {client.name}
+            {client.brand}
           </h3>
-          <span className="text-xs text-gray-400 dark:text-gray-400 font-medium">{client.brand}</span>
+          <span className="text-xs text-gray-400 dark:text-gray-400 font-medium">{client.name}</span>
         </div>
         <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
           <button
