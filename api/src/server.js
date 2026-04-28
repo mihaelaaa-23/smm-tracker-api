@@ -3,6 +3,7 @@ import fjwt from '@fastify/jwt'
 import swagger from '@fastify/swagger'
 import swaggerUi from '@fastify/swagger-ui'
 import cors from '@fastify/cors'
+import authRoutes from './routes/auth.js'
 
 const server = Fastify({ logger: true })
 
@@ -45,8 +46,22 @@ await server.register(swaggerUi, {
   },
 })
 
+// Routes
+await server.register(authRoutes)
+
 // Health check
-server.get('/health', async () => ({ status: 'ok' }))
+server.get('/health', {
+  schema: {
+    tags: ['Health'],
+    summary: 'Health check',
+    response: {
+      200: {
+        type: 'object',
+        properties: { status: { type: 'string' } }
+      }
+    }
+  }
+}, async () => ({ status: 'ok' }))
 
 // Start
 const start = async () => {
