@@ -1,0 +1,20 @@
+services:
+  - type: web
+    name: smm-tracker-api
+    env: node
+    rootDir: api
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: JWT_SECRET
+        value: smm-tracker-secret-key
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        fromDatabase:
+          name: smm-tracker-db
+          property: connectionString
+
+databases:
+  - name: smm-tracker-db
+    plan: free
