@@ -6,6 +6,7 @@ import cors from '@fastify/cors'
 import authRoutes from './routes/auth.js'
 import clientRoutes from './routes/clients.js'
 import taskRoutes from './routes/tasks.js'
+import paymentRoutes from './routes/payments.js'
 
 const server = Fastify({ logger: true })
 
@@ -67,6 +68,7 @@ await server.register(swaggerUi, {
 await server.register(authRoutes)
 await server.register(clientRoutes)
 await server.register(taskRoutes)
+await server.register(paymentRoutes)
 
 // Health check
 server.get('/health', {
