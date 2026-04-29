@@ -4,6 +4,7 @@ import swagger from '@fastify/swagger'
 import swaggerUi from '@fastify/swagger-ui'
 import cors from '@fastify/cors'
 import authRoutes from './routes/auth.js'
+import clientRoutes from './routes/clients.js'
 
 const server = Fastify({ logger: true })
 
@@ -34,6 +35,21 @@ await server.register(swagger, {
           bearerFormat: 'JWT',
         },
       },
+      schemas: {
+        Client: {
+          type: 'object',
+          properties: {
+            id: { type: 'integer' },
+            name: { type: 'string' },
+            brand: { type: 'string' },
+            platforms: { type: 'array', items: { type: 'string' } },
+            status: { type: 'string' },
+            priority: { type: 'boolean' },
+            notes: { type: 'string' },
+            createdAt: { type: 'string' },
+          }
+        }
+      }
     },
   },
 })
@@ -48,6 +64,7 @@ await server.register(swaggerUi, {
 
 // Routes
 await server.register(authRoutes)
+await server.register(clientRoutes)
 
 // Health check
 server.get('/health', {
