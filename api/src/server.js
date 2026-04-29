@@ -1,3 +1,4 @@
+import 'dotenv/config'
 import Fastify from 'fastify'
 import fjwt from '@fastify/jwt'
 import swagger from '@fastify/swagger'
