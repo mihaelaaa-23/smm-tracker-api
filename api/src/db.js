@@ -1,52 +1,54 @@
-import Database from 'better-sqlite3'
-import { join, dirname } from 'path'
-import { fileURLToPath } from 'url'
+import pg from 'pg'
 
-const __dirname = dirname(fileURLToPath(import.meta.url))
-const db = new Database(join(__dirname, '../smm-tracker.db'))
+const { Pool } = pg
 
-db.pragma('journal_mode = WAL')
-db.pragma('foreign_keys = ON')
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: { rejectUnauthorized: false },
+})
 
 // Create tables
-db.exec(`
-  CREATE TABLE IF NOT EXISTS clients (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    name TEXT NOT NULL,
-    brand TEXT NOT NULL,
-    platforms TEXT NOT NULL DEFAULT '[]',
-    status TEXT NOT NULL DEFAULT 'active',
-    priority INTEGER NOT NULL DEFAULT 0,
-    notes TEXT DEFAULT '',
-    createdAt TEXT NOT NULL DEFAULT (datetime('now'))
-  );
+const initDB = async () => {
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS clients (
+      id SERIAL PRIMARY KEY,
+      name TEXT NOT NULL,
+      brand TEXT NOT NULL,
+      platforms JSONB NOT NULL DEFAULT '[]',
+      status TEXT NOT NULL DEFAULT 'active',
+      priority BOOLEAN NOT NULL DEFAULT false,
+      notes TEXT DEFAULT '',
+      "createdAt" TIMESTAMP NOT NULL DEFAULT NOW()
+    );
 
-  CREATE TABLE IF NOT EXISTS tasks (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    clientId INTEGER NOT NULL,
-    title TEXT NOT NULL,
-    type TEXT NOT NULL DEFAULT 'post',
-    deadline TEXT NOT NULL,
-    status TEXT NOT NULL DEFAULT 'todo',
-    priority TEXT NOT NULL DEFAULT 'medium',
-    description TEXT DEFAULT '',
-    needsApproval INTEGER NOT NULL DEFAULT 0,
-    createdAt TEXT NOT NULL DEFAULT (datetime('now')),
-    FOREIGN KEY (clientId) REFERENCES clients(id) ON DELETE CASCADE
-  );
+    CREATE TABLE IF NOT EXISTS tasks (
+      id SERIAL PRIMARY KEY,
+      "clientId" INTEGER NOT NULL REFERENCES clients(id) ON DELETE CASCADE,
+      title TEXT NOT NULL,
+      type TEXT NOT NULL DEFAULT 'post',
+      deadline TEXT NOT NULL,
+      status TEXT NOT NULL DEFAULT 'todo',
+      priority TEXT NOT NULL DEFAULT 'medium',
+      description TEXT DEFAULT '',
+      "needsApproval" BOOLEAN NOT NULL DEFAULT false,
+      "createdAt" TIMESTAMP NOT NULL DEFAULT NOW()
+    );
 
-  CREATE TABLE IF NOT EXISTS payments (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    clientId INTEGER NOT NULL,
-    amount REAL NOT NULL,
-    currency TEXT NOT NULL DEFAULT 'MDL',
-    month INTEGER NOT NULL,
-    year INTEGER NOT NULL,
-    status TEXT NOT NULL DEFAULT 'unpaid',
-    date TEXT NOT NULL,
-    notes TEXT DEFAULT '',
-    FOREIGN KEY (clientId) REFERENCES clients(id) ON DELETE CASCADE
-  );
-`)
+    CREATE TABLE IF NOT EXISTS payments (
+      id SERIAL PRIMARY KEY,
+      "clientId" INTEGER NOT NULL REFERENCES clients(id) ON DELETE CASCADE,
+      amount NUMERIC NOT NULL,
+      currency TEXT NOT NULL DEFAULT 'MDL',
+      month INTEGER NOT NULL,
+      year INTEGER NOT NULL,
+      status TEXT NOT NULL DEFAULT 'unpaid',
+      date TEXT NOT NULL,
+      notes TEXT DEFAULT ''
+    );
+  `)
+  console.log('Database initialized')
+}
 
-export default db
+initDB().catch(console.error)
+
+export default pool

@@ -1,4 +1,4 @@
-import db from '../db.js'
+import pool from '../db.js'
 import { requirePermission } from '../middleware/auth.js'
 
 const TaskSchema = {
@@ -31,7 +31,7 @@ export default async function taskRoutes(server) {
         properties: {
           limit: { type: 'integer', default: 10 },
           offset: { type: 'integer', default: 0 },
-          clientId: { type: 'integer', description: 'Filter by client' },
+          clientId: { type: 'integer' },
           status: { type: 'string', enum: ['todo', 'in-progress', 'done'] },
           priority: { type: 'string', enum: ['low', 'medium', 'high'] },
         }
@@ -50,22 +50,21 @@ export default async function taskRoutes(server) {
     }
   }, async (request) => {
     const { limit = 10, offset = 0, clientId, status, priority } = request.query
-
     const conditions = []
     const params = []
 
-    if (clientId) { conditions.push('clientId = ?'); params.push(clientId) }
-    if (status) { conditions.push('status = ?'); params.push(status) }
-    if (priority) { conditions.push('priority = ?'); params.push(priority) }
+    if (clientId) { conditions.push(`"clientId" = $${params.length + 1}`); params.push(clientId) }
+    if (status) { conditions.push(`status = $${params.length + 1}`); params.push(status) }
+    if (priority) { conditions.push(`priority = $${params.length + 1}`); params.push(priority) }
 
     const where = conditions.length ? ' WHERE ' + conditions.join(' AND ') : ''
-    const data = db.prepare(`SELECT * FROM tasks${where} ORDER BY deadline ASC LIMIT ? OFFSET ?`).all(...params, limit, offset)
-    const { total } = db.prepare(`SELECT COUNT(*) as total FROM tasks${where}`).get(...params)
+    const { rows: data } = await pool.query(
+      `SELECT * FROM tasks${where} ORDER BY deadline ASC LIMIT $${params.length + 1} OFFSET $${params.length + 2}`,
+      [...params, limit, offset]
+    )
+    const { rows: [{ count }] } = await pool.query(`SELECT COUNT(*) as count FROM tasks${where}`, params)
 
-    return {
-      data: data.map(t => ({ ...t, needsApproval: Boolean(t.needsApproval) })),
-      total, limit, offset
-    }
+    return { data, total: parseInt(count), limit, offset }
   })
 
   // GET /tasks/:id
@@ -82,9 +81,9 @@ export default async function taskRoutes(server) {
       }
     }
   }, async (request, reply) => {
-    const task = db.prepare('SELECT * FROM tasks WHERE id = ?').get(request.params.id)
-    if (!task) return reply.code(404).send({ error: 'Task not found' })
-    return { ...task, needsApproval: Boolean(task.needsApproval) }
+    const { rows } = await pool.query('SELECT * FROM tasks WHERE id = $1', [request.params.id])
+    if (!rows[0]) return reply.code(404).send({ error: 'Task not found' })
+    return rows[0]
   })
 
   // POST /tasks
@@ -113,15 +112,14 @@ export default async function taskRoutes(server) {
   }, async (request, reply) => {
     const { clientId, title, type = 'post', deadline, status = 'todo', priority = 'medium', description = '', needsApproval = false } = request.body
 
-    const client = db.prepare('SELECT id FROM clients WHERE id = ?').get(clientId)
-    if (!client) return reply.code(404).send({ error: 'Client not found' })
+    const { rows: client } = await pool.query('SELECT id FROM clients WHERE id = $1', [clientId])
+    if (!client[0]) return reply.code(404).send({ error: 'Client not found' })
 
-    const result = db.prepare(
-      'INSERT INTO tasks (clientId, title, type, deadline, status, priority, description, needsApproval) VALUES (?, ?, ?, ?, ?, ?, ?, ?)'
-    ).run(clientId, title, type, deadline, status, priority, description, needsApproval ? 1 : 0)
-
-    const task = db.prepare('SELECT * FROM tasks WHERE id = ?').get(result.lastInsertRowid)
-    return reply.code(201).send({ ...task, needsApproval: Boolean(task.needsApproval) })
+    const { rows } = await pool.query(
+      `INSERT INTO tasks ("clientId", title, type, deadline, status, priority, description, "needsApproval") VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *`,
+      [clientId, title, type, deadline, status, priority, description, needsApproval]
+    )
+    return reply.code(201).send(rows[0])
   })
 
   // PUT /tasks/:id
@@ -150,24 +148,23 @@ export default async function taskRoutes(server) {
       }
     }
   }, async (request, reply) => {
-    const existing = db.prepare('SELECT * FROM tasks WHERE id = ?').get(request.params.id)
-    if (!existing) return reply.code(404).send({ error: 'Task not found' })
+    const { rows: existing } = await pool.query('SELECT * FROM tasks WHERE id = $1', [request.params.id])
+    if (!existing[0]) return reply.code(404).send({ error: 'Task not found' })
 
     const { title, type, deadline, status, priority, description, needsApproval } = request.body
-    db.prepare(`
-      UPDATE tasks SET
-        title = COALESCE(?, title),
-        type = COALESCE(?, type),
-        deadline = COALESCE(?, deadline),
-        status = COALESCE(?, status),
-        priority = COALESCE(?, priority),
-        description = COALESCE(?, description),
-        needsApproval = COALESCE(?, needsApproval)
-      WHERE id = ?
-    `).run(title, type, deadline, status, priority, description, needsApproval !== undefined ? (needsApproval ? 1 : 0) : null, request.params.id)
-
-    const task = db.prepare('SELECT * FROM tasks WHERE id = ?').get(request.params.id)
-    return { ...task, needsApproval: Boolean(task.needsApproval) }
+    const { rows } = await pool.query(
+      `UPDATE tasks SET
+        title = COALESCE($1, title),
+        type = COALESCE($2, type),
+        deadline = COALESCE($3, deadline),
+        status = COALESCE($4, status),
+        priority = COALESCE($5, priority),
+        description = COALESCE($6, description),
+        "needsApproval" = COALESCE($7, "needsApproval")
+      WHERE id = $8 RETURNING *`,
+      [title, type, deadline, status, priority, description, needsApproval, request.params.id]
+    )
+    return rows[0]
   })
 
   // DELETE /tasks/:id
@@ -184,10 +181,9 @@ export default async function taskRoutes(server) {
       }
     }
   }, async (request, reply) => {
-    const existing = db.prepare('SELECT * FROM tasks WHERE id = ?').get(request.params.id)
-    if (!existing) return reply.code(404).send({ error: 'Task not found' })
-
-    db.prepare('DELETE FROM tasks WHERE id = ?').run(request.params.id)
+    const { rows } = await pool.query('SELECT id FROM tasks WHERE id = $1', [request.params.id])
+    if (!rows[0]) return reply.code(404).send({ error: 'Task not found' })
+    await pool.query('DELETE FROM tasks WHERE id = $1', [request.params.id])
     return { message: 'Task deleted successfully' }
   })
 }

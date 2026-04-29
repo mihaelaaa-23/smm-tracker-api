@@ -1,4 +1,4 @@
-import db from '../db.js'
+import pool from '../db.js'
 import { requirePermission } from '../middleware/auth.js'
 
 const ClientSchema = {
@@ -27,9 +27,9 @@ export default async function clientRoutes(server) {
       querystring: {
         type: 'object',
         properties: {
-          limit: { type: 'integer', default: 10, description: 'Number of items to return' },
-          offset: { type: 'integer', default: 0, description: 'Number of items to skip' },
-          status: { type: 'string', enum: ['active', 'inactive'], description: 'Filter by status' },
+          limit: { type: 'integer', default: 10 },
+          offset: { type: 'integer', default: 0 },
+          status: { type: 'string', enum: ['active', 'inactive'] },
         }
       },
       response: {
@@ -46,28 +46,16 @@ export default async function clientRoutes(server) {
     }
   }, async (request) => {
     const { limit = 10, offset = 0, status } = request.query
-
-    let query = 'SELECT * FROM clients'
-    let countQuery = 'SELECT COUNT(*) as total FROM clients'
+    const conditions = []
     const params = []
 
-    if (status) {
-      query += ' WHERE status = ?'
-      countQuery += ' WHERE status = ?'
-      params.push(status)
-    }
+    if (status) { conditions.push(`status = $${params.length + 1}`); params.push(status) }
 
-    query += ' ORDER BY createdAt DESC LIMIT ? OFFSET ?'
+    const where = conditions.length ? ' WHERE ' + conditions.join(' AND ') : ''
+    const { rows: data } = await pool.query(`SELECT * FROM clients${where} ORDER BY "createdAt" DESC LIMIT $${params.length + 1} OFFSET $${params.length + 2}`, [...params, limit, offset])
+    const { rows: [{ count }] } = await pool.query(`SELECT COUNT(*) as count FROM clients${where}`, params)
 
-    const data = db.prepare(query).all(...params, limit, offset)
-    const { total } = db.prepare(countQuery).get(...params)
-
-    return {
-      data: data.map(c => ({ ...c, platforms: JSON.parse(c.platforms), priority: Boolean(c.priority) })),
-      total,
-      limit,
-      offset
-    }
+    return { data, total: parseInt(count), limit, offset }
   })
 
   // GET /clients/:id
@@ -77,19 +65,16 @@ export default async function clientRoutes(server) {
       tags: ['Clients'],
       summary: 'Get client by ID',
       security: [{ bearerAuth: [] }],
-      params: {
-        type: 'object',
-        properties: { id: { type: 'integer' } }
-      },
+      params: { type: 'object', properties: { id: { type: 'integer' } } },
       response: {
         200: ClientSchema,
         404: { type: 'object', properties: { error: { type: 'string' } } }
       }
     }
   }, async (request, reply) => {
-    const client = db.prepare('SELECT * FROM clients WHERE id = ?').get(request.params.id)
-    if (!client) return reply.code(404).send({ error: 'Client not found' })
-    return { ...client, platforms: JSON.parse(client.platforms), priority: Boolean(client.priority) }
+    const { rows } = await pool.query('SELECT * FROM clients WHERE id = $1', [request.params.id])
+    if (!rows[0]) return reply.code(404).send({ error: 'Client not found' })
+    return rows[0]
   })
 
   // POST /clients
@@ -111,18 +96,15 @@ export default async function clientRoutes(server) {
           notes: { type: 'string', default: '' },
         }
       },
-      response: {
-        201: ClientSchema
-      }
+      response: { 201: ClientSchema }
     }
   }, async (request, reply) => {
     const { name, brand, platforms = [], status = 'active', priority = false, notes = '' } = request.body
-    const result = db.prepare(
-      'INSERT INTO clients (name, brand, platforms, status, priority, notes) VALUES (?, ?, ?, ?, ?, ?)'
-    ).run(name, brand, JSON.stringify(platforms), status, priority ? 1 : 0, notes)
-
-    const client = db.prepare('SELECT * FROM clients WHERE id = ?').get(result.lastInsertRowid)
-    return reply.code(201).send({ ...client, platforms: JSON.parse(client.platforms), priority: Boolean(client.priority) })
+    const { rows } = await pool.query(
+      `INSERT INTO clients (name, brand, platforms, status, priority, notes) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *`,
+      [name, brand, JSON.stringify(platforms), status, priority, notes]
+    )
+    return reply.code(201).send(rows[0])
   })
 
   // PUT /clients/:id
@@ -132,10 +114,7 @@ export default async function clientRoutes(server) {
       tags: ['Clients'],
       summary: 'Update client',
       security: [{ bearerAuth: [] }],
-      params: {
-        type: 'object',
-        properties: { id: { type: 'integer' } }
-      },
+      params: { type: 'object', properties: { id: { type: 'integer' } } },
       body: {
         type: 'object',
         properties: {
@@ -153,23 +132,22 @@ export default async function clientRoutes(server) {
       }
     }
   }, async (request, reply) => {
-    const existing = db.prepare('SELECT * FROM clients WHERE id = ?').get(request.params.id)
-    if (!existing) return reply.code(404).send({ error: 'Client not found' })
+    const { rows: existing } = await pool.query('SELECT * FROM clients WHERE id = $1', [request.params.id])
+    if (!existing[0]) return reply.code(404).send({ error: 'Client not found' })
 
     const { name, brand, platforms, status, priority, notes } = request.body
-    db.prepare(`
-      UPDATE clients SET
-        name = COALESCE(?, name),
-        brand = COALESCE(?, brand),
-        platforms = COALESCE(?, platforms),
-        status = COALESCE(?, status),
-        priority = COALESCE(?, priority),
-        notes = COALESCE(?, notes)
-      WHERE id = ?
-    `).run(name, brand, platforms ? JSON.stringify(platforms) : null, status, priority !== undefined ? (priority ? 1 : 0) : null, notes, request.params.id)
-
-    const client = db.prepare('SELECT * FROM clients WHERE id = ?').get(request.params.id)
-    return { ...client, platforms: JSON.parse(client.platforms), priority: Boolean(client.priority) }
+    const { rows } = await pool.query(
+      `UPDATE clients SET
+        name = COALESCE($1, name),
+        brand = COALESCE($2, brand),
+        platforms = COALESCE($3, platforms),
+        status = COALESCE($4, status),
+        priority = COALESCE($5, priority),
+        notes = COALESCE($6, notes)
+      WHERE id = $7 RETURNING *`,
+      [name, brand, platforms ? JSON.stringify(platforms) : null, status, priority, notes, request.params.id]
+    )
+    return rows[0]
   })
 
   // DELETE /clients/:id
@@ -179,20 +157,16 @@ export default async function clientRoutes(server) {
       tags: ['Clients'],
       summary: 'Delete client',
       security: [{ bearerAuth: [] }],
-      params: {
-        type: 'object',
-        properties: { id: { type: 'integer' } }
-      },
+      params: { type: 'object', properties: { id: { type: 'integer' } } },
       response: {
         200: { type: 'object', properties: { message: { type: 'string' } } },
         404: { type: 'object', properties: { error: { type: 'string' } } }
       }
     }
   }, async (request, reply) => {
-    const existing = db.prepare('SELECT * FROM clients WHERE id = ?').get(request.params.id)
-    if (!existing) return reply.code(404).send({ error: 'Client not found' })
-
-    db.prepare('DELETE FROM clients WHERE id = ?').run(request.params.id)
+    const { rows } = await pool.query('SELECT id FROM clients WHERE id = $1', [request.params.id])
+    if (!rows[0]) return reply.code(404).send({ error: 'Client not found' })
+    await pool.query('DELETE FROM clients WHERE id = $1', [request.params.id])
     return { message: 'Client deleted successfully' }
   })
 }

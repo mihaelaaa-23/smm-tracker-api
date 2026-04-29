@@ -1,4 +1,4 @@
-import db from '../db.js'
+import pool from '../db.js'
 import { requirePermission } from '../middleware/auth.js'
 
 const PaymentSchema = {
@@ -30,11 +30,11 @@ export default async function paymentRoutes(server) {
         properties: {
           limit: { type: 'integer', default: 10 },
           offset: { type: 'integer', default: 0 },
-          clientId: { type: 'integer', description: 'Filter by client' },
+          clientId: { type: 'integer' },
           status: { type: 'string', enum: ['paid', 'unpaid', 'partial'] },
           currency: { type: 'string', enum: ['MDL', 'USD'] },
-          month: { type: 'integer', description: 'Filter by month (1-12)' },
-          year: { type: 'integer', description: 'Filter by year' },
+          month: { type: 'integer' },
+          year: { type: 'integer' },
         }
       },
       response: {
@@ -51,21 +51,23 @@ export default async function paymentRoutes(server) {
     }
   }, async (request) => {
     const { limit = 10, offset = 0, clientId, status, currency, month, year } = request.query
-
     const conditions = []
     const params = []
 
-    if (clientId) { conditions.push('clientId = ?'); params.push(clientId) }
-    if (status) { conditions.push('status = ?'); params.push(status) }
-    if (currency) { conditions.push('currency = ?'); params.push(currency) }
-    if (month) { conditions.push('month = ?'); params.push(month) }
-    if (year) { conditions.push('year = ?'); params.push(year) }
+    if (clientId) { conditions.push(`"clientId" = $${params.length + 1}`); params.push(clientId) }
+    if (status) { conditions.push(`status = $${params.length + 1}`); params.push(status) }
+    if (currency) { conditions.push(`currency = $${params.length + 1}`); params.push(currency) }
+    if (month) { conditions.push(`month = $${params.length + 1}`); params.push(month) }
+    if (year) { conditions.push(`year = $${params.length + 1}`); params.push(year) }
 
     const where = conditions.length ? ' WHERE ' + conditions.join(' AND ') : ''
-    const data = db.prepare(`SELECT * FROM payments${where} ORDER BY year DESC, month DESC LIMIT ? OFFSET ?`).all(...params, limit, offset)
-    const { total } = db.prepare(`SELECT COUNT(*) as total FROM payments${where}`).get(...params)
+    const { rows: data } = await pool.query(
+      `SELECT * FROM payments${where} ORDER BY year DESC, month DESC LIMIT $${params.length + 1} OFFSET $${params.length + 2}`,
+      [...params, limit, offset]
+    )
+    const { rows: [{ count }] } = await pool.query(`SELECT COUNT(*) as count FROM payments${where}`, params)
 
-    return { data, total, limit, offset }
+    return { data, total: parseInt(count), limit, offset }
   })
 
   // GET /payments/:id
@@ -82,9 +84,9 @@ export default async function paymentRoutes(server) {
       }
     }
   }, async (request, reply) => {
-    const payment = db.prepare('SELECT * FROM payments WHERE id = ?').get(request.params.id)
-    if (!payment) return reply.code(404).send({ error: 'Payment not found' })
-    return payment
+    const { rows } = await pool.query('SELECT * FROM payments WHERE id = $1', [request.params.id])
+    if (!rows[0]) return reply.code(404).send({ error: 'Payment not found' })
+    return rows[0]
   })
 
   // POST /payments
@@ -113,15 +115,14 @@ export default async function paymentRoutes(server) {
   }, async (request, reply) => {
     const { clientId, amount, currency = 'MDL', month, year, status = 'unpaid', date, notes = '' } = request.body
 
-    const client = db.prepare('SELECT id FROM clients WHERE id = ?').get(clientId)
-    if (!client) return reply.code(404).send({ error: 'Client not found' })
+    const { rows: client } = await pool.query('SELECT id FROM clients WHERE id = $1', [clientId])
+    if (!client[0]) return reply.code(404).send({ error: 'Client not found' })
 
-    const result = db.prepare(
-      'INSERT INTO payments (clientId, amount, currency, month, year, status, date, notes) VALUES (?, ?, ?, ?, ?, ?, ?, ?)'
-    ).run(clientId, amount, currency, month, year, status, date, notes)
-
-    const payment = db.prepare('SELECT * FROM payments WHERE id = ?').get(result.lastInsertRowid)
-    return reply.code(201).send(payment)
+    const { rows } = await pool.query(
+      `INSERT INTO payments ("clientId", amount, currency, month, year, status, date, notes) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *`,
+      [clientId, amount, currency, month, year, status, date, notes]
+    )
+    return reply.code(201).send(rows[0])
   })
 
   // PUT /payments/:id
@@ -150,23 +151,23 @@ export default async function paymentRoutes(server) {
       }
     }
   }, async (request, reply) => {
-    const existing = db.prepare('SELECT * FROM payments WHERE id = ?').get(request.params.id)
-    if (!existing) return reply.code(404).send({ error: 'Payment not found' })
+    const { rows: existing } = await pool.query('SELECT * FROM payments WHERE id = $1', [request.params.id])
+    if (!existing[0]) return reply.code(404).send({ error: 'Payment not found' })
 
     const { amount, currency, month, year, status, date, notes } = request.body
-    db.prepare(`
-      UPDATE payments SET
-        amount = COALESCE(?, amount),
-        currency = COALESCE(?, currency),
-        month = COALESCE(?, month),
-        year = COALESCE(?, year),
-        status = COALESCE(?, status),
-        date = COALESCE(?, date),
-        notes = COALESCE(?, notes)
-      WHERE id = ?
-    `).run(amount, currency, month, year, status, date, notes, request.params.id)
-
-    return db.prepare('SELECT * FROM payments WHERE id = ?').get(request.params.id)
+    const { rows } = await pool.query(
+      `UPDATE payments SET
+        amount = COALESCE($1, amount),
+        currency = COALESCE($2, currency),
+        month = COALESCE($3, month),
+        year = COALESCE($4, year),
+        status = COALESCE($5, status),
+        date = COALESCE($6, date),
+        notes = COALESCE($7, notes)
+      WHERE id = $8 RETURNING *`,
+      [amount, currency, month, year, status, date, notes, request.params.id]
+    )
+    return rows[0]
   })
 
   // DELETE /payments/:id
@@ -183,10 +184,9 @@ export default async function paymentRoutes(server) {
       }
     }
   }, async (request, reply) => {
-    const existing = db.prepare('SELECT * FROM payments WHERE id = ?').get(request.params.id)
-    if (!existing) return reply.code(404).send({ error: 'Payment not found' })
-
-    db.prepare('DELETE FROM payments WHERE id = ?').run(request.params.id)
+    const { rows } = await pool.query('SELECT id FROM payments WHERE id = $1', [request.params.id])
+    if (!rows[0]) return reply.code(404).send({ error: 'Payment not found' })
+    await pool.query('DELETE FROM payments WHERE id = $1', [request.params.id])
     return { message: 'Payment deleted successfully' }
   })
 }
