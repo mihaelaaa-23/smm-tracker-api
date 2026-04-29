@@ -7,5 +7,5 @@ export default defineConfig({
     react(),
     tailwindcss(),
   ],
-  base: '/smm-tracker/',
+  base: '/smm-tracker-api/',
 })
