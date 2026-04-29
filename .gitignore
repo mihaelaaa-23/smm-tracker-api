@@ -23,4 +23,9 @@ dist-ssr
 *.sln
 *.sw?
 
+# SQLite
+api/*.db
+api/*.db-shm
+api/*.db-wal
+
 .claude
