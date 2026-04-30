@@ -13,6 +13,12 @@ db.version(2).stores({
   payments: '++id, clientId, status, month, year, date',
 })
 
+db.version(3).stores({
+  clients: '++id, name, status, priority, email, createdAt',
+  tasks: '++id, clientId, status, priority, deadline, createdAt',
+  payments: '++id, clientId, status, month, year, date',
+})
+
 // Client operations
 export const clientsDB = {
   getAll: () => db.clients.orderBy('createdAt').reverse().toArray(),
