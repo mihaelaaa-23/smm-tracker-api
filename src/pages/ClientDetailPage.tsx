@@ -166,8 +166,8 @@ export default function ClientDetailPage() {
                         {tasks.map((task, i) => (
                             <div
                                 key={task.id}
-                                className={`group flex items-center gap-4 px-6 py-4 hover:bg-gray-50 dark:hover:bg-zinc-800/50 transition-colors ${i !== tasks.length - 1 ? 'border-b border-gray-50 dark:border-zinc-800' : ''
-                                    }`}
+                                onClick={() => { setEditingTask(task); setShowTaskForm(true) }}
+                                className={`group flex items-center gap-4 px-6 py-4 hover:bg-gray-50 dark:hover:bg-zinc-800/50 transition-colors cursor-pointer ${i !== tasks.length - 1 ? 'border-b border-gray-50 dark:border-zinc-800' : ''}`}
                             >
                                 <div className="flex-1 min-w-0">
                                     <p className="text-sm font-semibold text-gray-900 dark:text-white truncate">{task.title}</p>
@@ -184,13 +184,14 @@ export default function ClientDetailPage() {
                                 </span>
                                 <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
                                     <button
-                                        onClick={() => { setEditingTask(task); setShowTaskForm(true) }}
+                                        onClick={(e) => { e.stopPropagation(); setEditingTask(task); setShowTaskForm(true) }}
                                         className="p-1.5 rounded-lg text-gray-300 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-all"
                                     >
                                         <Pencil size={13} />
                                     </button>
                                     <button
-                                        onClick={async () => {
+                                        onClick={async (e) => {
+                                            e.stopPropagation()
                                             const ok = await confirm({
                                                 title: 'Delete task',
                                                 message: 'This will permanently delete the task.',
@@ -198,7 +199,9 @@ export default function ClientDetailPage() {
                                                 variant: 'danger',
                                             })
                                             if (ok) deleteTaskMutation.mutate(task.id!)
-                                        }}                                    >
+                                        }}
+                                        className="p-1.5 rounded-lg text-gray-300 dark:text-gray-500 hover:text-red-400 transition-all"
+                                    >
                                         <Trash2 size={13} />
                                     </button>
                                 </div>
@@ -240,8 +243,8 @@ export default function ClientDetailPage() {
                             return (
                                 <div
                                     key={payment.id}
-                                    className={`flex items-center gap-4 px-6 py-4 hover:bg-gray-50 dark:hover:bg-zinc-800/50 transition-colors ${i !== payments.length - 1 ? 'border-b border-gray-50 dark:border-zinc-800' : ''
-                                        }`}
+                                    onClick={() => navigate('/payments')}
+                                    className={`flex items-center gap-4 px-6 py-4 hover:bg-gray-50 dark:hover:bg-zinc-800/50 transition-colors cursor-pointer ${i !== payments.length - 1 ? 'border-b border-gray-50 dark:border-zinc-800' : ''}`}
                                 >
                                     <div className="flex-1">
                                         <p className="text-sm font-semibold text-gray-900 dark:text-white">
