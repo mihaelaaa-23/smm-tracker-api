@@ -1,5 +1,5 @@
 {
-  "name": "smm-tracker",
+  "name": "smm-tracker-api",
   "private": true,
   "version": "0.0.0",
   "type": "module",
