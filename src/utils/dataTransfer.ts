@@ -34,55 +34,25 @@ export async function exportData(): Promise<void> {
   URL.revokeObjectURL(url)
 }
 
-export async function importData(file: File): Promise<{ imported: number; errors: string[] }> {
+export async function importData(file: File): Promise<{ imported: number }> {
   const text = await file.text()
   let parsed: ExportData
-
   try {
     parsed = JSON.parse(text)
   } catch {
     throw new Error('Invalid file — could not parse JSON.')
   }
-
   if (!parsed.version || !Array.isArray(parsed.clients) || !Array.isArray(parsed.tasks) || !Array.isArray(parsed.payments)) {
     throw new Error('Invalid file format — missing required fields.')
   }
-
-  const errors: string[] = []
-  let imported = 0
-
-  // Upsert clients
-  for (const client of parsed.clients) {
-    try {
-      const { id, ...rest } = client as any
-      await db.clients.add({ ...rest, createdAt: new Date(rest.createdAt) })
-      imported++
-    } catch {
-      errors.push(`Skipped duplicate client: ${(client as any).name}`)
-    }
-  }
-
-  // Upsert tasks
-  for (const task of parsed.tasks) {
-    try {
-      const { id, ...rest } = task as any
-      await db.tasks.add({ ...rest, createdAt: new Date(rest.createdAt) })
-      imported++
-    } catch {
-      errors.push(`Skipped duplicate task: ${(task as any).title}`)
-    }
-  }
-
-  // Upsert payments
-  for (const payment of parsed.payments) {
-    try {
-      const { id, ...rest } = payment as any
-      await db.payments.add(rest)
-      imported++
-    } catch {
-      errors.push(`Skipped duplicate payment`)
-    }
-  }
-
-  return { imported, errors }
+  await db.transaction('rw', db.clients, db.tasks, db.payments, async () => {
+    await db.clients.clear()
+    await db.tasks.clear()
+    await db.payments.clear()
+    await db.clients.bulkAdd(parsed.clients.map((c: any) => ({ ...c, createdAt: new Date(c.createdAt) })))
+    await db.tasks.bulkAdd(parsed.tasks.map((t: any) => ({ ...t, createdAt: new Date(t.createdAt) })))
+    await db.payments.bulkAdd(parsed.payments as any[])
+  })
+  const imported = parsed.clients.length + parsed.tasks.length + parsed.payments.length
+  return { imported }
 }
