@@ -9,7 +9,7 @@ import NotFoundPage from './pages/NotFoundPage'
 
 function App() {
   return (
-    <BrowserRouter basename="/smm-tracker">
+    <BrowserRouter basename="/">
       <Routes>
         <Route path="/" element={<Layout />}>
           <Route index element={<Navigate to="/dashboard" replace />} />
