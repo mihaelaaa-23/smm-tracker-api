@@ -1,131 +1,82 @@
-# SMM Tracker
+# SMM Tracker API
 
-A client-side web application for freelance social media managers to track clients, content tasks, and payments — all in the browser, no backend needed.
+REST API for SMM Tracker built with Fastify + SQLite, deployed on Render.
 
-**Live demo:** https://mihaelaaa-23.github.io/smm-tracker/
+## Live URLs
 
----
-
-## Features
-
-### Clients
-- Add, edit, delete SMM clients
-- Track platforms (Instagram, TikTok, Facebook, LinkedIn)
-- Mark clients as active/inactive and priority
-- Click any client to view their full detail page
-
-### Tasks
-- Create tasks linked to a client with deadline, type, priority and status
-- Filter by status, priority and client
-- Mark tasks as needing client approval
-- Overdue tasks highlighted automatically
-
-### Payments
-- Monthly payment tracking per client
-- Filter by status (paid/unpaid/partial), currency and client search
-- Days overdue shown automatically
-- Email reminder via mailto for unpaid payments
-- Bottom bar with Total Billed / Collected / Outstanding per month
-- Month navigation to browse payment history
-
-### Dashboard
-- Summary cards: Active Clients, Pending Tasks, Collected, Unpaid
-- Revenue bar chart (last 6 months)
-- Payment status donut chart (current month)
-- Tasks due this week
-- Unpaid payments this month
-
-### Client Detail Page
-- Per-client view with all their tasks and payments
-- Invoice blocked indicator when tasks need approval
-
-### UX
-- Light / dark mode toggle, persisted in localStorage
-- Luxury minimal design inspired by BestSecret
-- Urbanist font
-- Mobile-first, optimized for iPad and iPhone
-- Custom confirm dialogs
-- Mobile bottom navigation
-
----
+- **Frontend:** https://mihaelaaa-23.github.io/smm-tracker-api/
+- **API:** https://smm-tracker-api.onrender.com
+- **Swagger UI:** https://smm-tracker-api.onrender.com/docs
 
 ## Tech Stack
 
-| Layer | Technology |
-|---|---|
-| Framework | React + TypeScript |
-| Build tool | Vite 8 |
-| Styling | Tailwind CSS v4 |
-| Routing | React Router v6 |
-| Data fetching | TanStack Query v5 |
-| Local storage | Dexie.js (IndexedDB) |
-| Charts | Recharts |
-| Icons | Lucide React |
-| Hosting | GitHub Pages |
+- Node.js + Fastify
+- SQLite (better-sqlite3)
+- JWT Authentication (@fastify/jwt)
+- Swagger UI (@fastify/swagger-ui)
+- React 18 + TypeScript + Vite
+- Tailwind CSS v4
+- Dexie.js (IndexedDB)
 
----
+## Endpoints
 
-## App Flows
+### Auth
+- `POST /token` — generate JWT with role (ADMIN/WRITER/VISITOR)
 
-### Adding a client
-1. Navigate to Clients
-2. Click **+ Add Client**
-3. Fill in name, brand, platforms, status and notes
-4. Click **Add Client** — saved to IndexedDB
+### Clients
+- `GET /clients` — list with pagination (?limit=10&offset=0)
+- `GET /clients/:id` — get by ID
+- `POST /clients` — create (requires WRITE)
+- `PUT /clients/:id` — update (requires WRITE)
+- `DELETE /clients/:id` — delete (requires DELETE)
 
-### Tracking tasks
-1. Navigate to Tasks or open a Client Detail page
-2. Click **+ Add Task**
-3. Set title, type, priority, deadline and approval flag
-4. Update status inline via the dropdown on each card
+### Tasks
+- `GET /tasks` — list with pagination, filter by clientId/status/priority
+- `GET /tasks/:id` — get by ID
+- `POST /tasks` — create (requires WRITE)
+- `PUT /tasks/:id` — update (requires WRITE)
+- `DELETE /tasks/:id` — delete (requires DELETE)
 
-### Recording a payment
-1. Navigate to Payments
-2. Click **+ Add Payment** or the **+** button on a client row
-3. Select client, month/year, amount, currency and status
-4. Overdue state is derived automatically from the payment date
+### Payments
+- `GET /payments` — list with pagination, filter by clientId/status/currency/month/year
+- `GET /payments/:id` — get by ID
+- `POST /payments` — create (requires WRITE)
+- `PUT /payments/:id` — update (requires WRITE)
+- `DELETE /payments/:id` — delete (requires DELETE)
 
----
+### Health
+- `GET /health` — health check
 
-## Project Structure
-```
-src/
-├── components/
-│   ├── ui/          # Layout, Navbar, Sidebar, MobileNav, FilterDropdown, ActiveFilters, ConfirmDialog
-│   ├── clients/     # ClientCard, ClientForm, ClientList
-│   ├── tasks/       # TaskCard, TaskForm, TaskList
-│   └── payments/    # PaymentForm, PaymentList, PaymentSummary
-├── pages/           # DashboardPage, ClientsPage, ClientDetailPage, TasksPage, PaymentsPage, NotFoundPage
-├── db/              # Dexie schema + all DB operations + formatPeriod helper
-├── hooks/           # useTheme, useConfirm
-└── types/           # Client, Task, Payment interfaces
-```
----
+## JWT Roles
 
-## Git Workflow
+| Role | Permissions |
+|------|-------------|
+| ADMIN | READ, WRITE, DELETE |
+| WRITER | READ, WRITE |
+| VISITOR | READ only |
 
-- `main` — production branch (deployed to GitHub Pages)
-- `feature/*` — one branch per feature, merged via PR
-
-Commit convention: `feat:` / `fix:` / `style:` / `chore:` / `docs:`
-
----
+Token expires in 1 minute.
 
 ## Local Development
+
 ```bash
-git clone https://github.com/mihaelaaa-23/smm-tracker
-cd smm-tracker
 npm install
 npm run dev
 ```
 
-Open [http://localhost:5173/smm-tracker/](http://localhost:5173/smm-tracker/)
+Frontend runs on http://localhost:5173  
+API runs on http://localhost:3000  
+Swagger UI at http://localhost:3000/docs
 
----
+Create `.env` in the project root:
+VITE_API_URL=https://smm-tracker-api.onrender.com
+JWT_SECRET=your_secret
 
 ## Deploy
+
+Frontend deployed via GitHub Pages:
 ```bash
 npm run deploy
 ```
 
-Deploys to GitHub Pages via `gh-pages` package.
+API deployed on Render.com — auto-deploys on push to `main`.
