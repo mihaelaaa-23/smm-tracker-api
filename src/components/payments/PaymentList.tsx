@@ -30,7 +30,8 @@ export default function PaymentList({ payments, clients, onDelete, onEdit }: Pay
         )
     }
 
-    const handleEmailReminder = (payment: Payment, client: Client | undefined) => {
+    const handleEmailReminder = (e: React.MouseEvent, payment: Payment, client: Client | undefined) => {
+        e.stopPropagation()
         if (!client) return
 
         if (!client.email) {
@@ -68,8 +69,8 @@ export default function PaymentList({ payments, clients, onDelete, onEdit }: Pay
                     return (
                         <div
                             key={payment.id}
-                            className={`group px-4 py-3 hover:bg-gray-50 dark:hover:bg-zinc-800/50 transition-colors ${!isLast ? 'border-b border-gray-50 dark:border-zinc-800' : ''
-                                }`}
+                            onClick={() => onEdit(payment)}
+                            className={`group px-4 py-3 hover:bg-gray-50 dark:hover:bg-zinc-800/50 transition-colors cursor-pointer ${!isLast ? 'border-b border-gray-50 dark:border-zinc-800' : ''}`}
                         >
                             {/* Mobile layout */}
                             <div className="flex items-center justify-between gap-2">
@@ -113,7 +114,7 @@ export default function PaymentList({ payments, clients, onDelete, onEdit }: Pay
                                 <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
                                     {payment.status !== 'paid' && (
                                         <button
-                                            onClick={() => handleEmailReminder(payment, client)}
+                                            onClick={(e) => handleEmailReminder(e, payment, client)}
                                             className="p-1.5 rounded-lg text-gray-300 dark:text-gray-500 hover:text-blue-500 transition-all"
                                             title="Send payment reminder"
                                         >
@@ -121,13 +122,13 @@ export default function PaymentList({ payments, clients, onDelete, onEdit }: Pay
                                         </button>
                                     )}
                                     <button
-                                        onClick={() => onEdit(payment)}
+                                        onClick={(e) => { e.stopPropagation(); onEdit(payment) }}
                                         className="p-1.5 rounded-lg text-gray-300 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-all"
                                     >
                                         <Pencil size={13} />
                                     </button>
                                     <button
-                                        onClick={() => onDelete(payment.id!)}
+                                        onClick={(e) => { e.stopPropagation(); onDelete(payment.id!) }}
                                         className="p-1.5 rounded-lg text-gray-300 dark:text-gray-500 hover:text-red-400 transition-all"
                                     >
                                         <Trash2 size={13} />

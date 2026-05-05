@@ -46,6 +46,7 @@ export default function KanbanCard({ task, client, onEdit, onDelete, isDragging 
                 ? 'opacity-50 shadow-xl scale-105'
                 : 'hover:shadow-md'
                 }`}
+            onClick={() => !isSortableDragging && !isDragging && onEdit(task)}
             {...attributes}
             {...listeners}
         >
@@ -56,12 +57,14 @@ export default function KanbanCard({ task, client, onEdit, onDelete, isDragging 
                 </p>
                 <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
                     <button
+                        onPointerDown={e => e.stopPropagation()}
                         onClick={e => { e.stopPropagation(); onEdit(task) }}
                         className="p-1 rounded-lg text-gray-300 dark:text-gray-600 hover:text-gray-600 dark:hover:text-gray-300 transition-all"
                     >
                         <Pencil size={12} />
                     </button>
                     <button
+                        onPointerDown={e => e.stopPropagation()}
                         onClick={e => { e.stopPropagation(); onDelete(task.id!) }}
                         className="p-1 rounded-lg text-gray-300 dark:text-gray-600 hover:text-red-400 transition-all"
                     >
@@ -79,7 +82,7 @@ export default function KanbanCard({ task, client, onEdit, onDelete, isDragging 
             <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                     <span className={`w-2 h-2 rounded-full shrink-0 ${task.priority === 'high' ? 'bg-red-400' :
-                            task.priority === 'medium' ? 'bg-yellow-400' : 'bg-gray-300'
+                        task.priority === 'medium' ? 'bg-yellow-400' : 'bg-gray-300'
                         }`} />
                     <span className="text-xs text-gray-400 dark:text-gray-500 capitalize">{task.priority}</span>
                     {task.needsApproval && (
@@ -88,9 +91,9 @@ export default function KanbanCard({ task, client, onEdit, onDelete, isDragging 
                 </div>
                 {daysRemaining !== null && (
                     <p className={`text-xs font-medium ${daysRemaining < 0 ? 'text-red-500' :
-                            daysRemaining === 0 ? 'text-orange-500' :
-                                daysRemaining <= 3 ? 'text-yellow-600 dark:text-yellow-400' :
-                                    'text-gray-400 dark:text-gray-600'
+                        daysRemaining === 0 ? 'text-orange-500' :
+                            daysRemaining <= 3 ? 'text-yellow-600 dark:text-yellow-400' :
+                                'text-gray-400 dark:text-gray-600'
                         }`}>
                         {daysRemaining < 0 ? `${Math.abs(daysRemaining)}d overdue` :
                             daysRemaining === 0 ? 'Due today' :
