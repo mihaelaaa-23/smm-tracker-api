@@ -46,9 +46,9 @@ export default function TaskList({ tasks, clients, onDelete, onEdit, onStatusCha
         return (
           <div
             key={task.id}
-            className={`group flex items-center gap-4 px-6 py-4 hover:bg-gray-50 dark:hover:bg-zinc-800/50 transition-colors ${
-              !isLast ? 'border-b border-gray-50 dark:border-zinc-800' : ''
-            }`}
+            onClick={() => onEdit(task)}
+            className={`group flex items-center gap-4 px-6 py-4 hover:bg-gray-50 dark:hover:bg-zinc-800/50 transition-colors cursor-pointer ${!isLast ? 'border-b border-gray-50 dark:border-zinc-800' : ''
+              }`}
           >
             {/* Task info */}
             <div className="flex-1 min-w-0">
@@ -71,9 +71,8 @@ export default function TaskList({ tasks, clients, onDelete, onEdit, onStatusCha
             </div>
 
             {/* Deadline */}
-            <span className={`text-xs font-medium shrink-0 hidden sm:block ${
-              isOverdue ? 'text-red-500' : 'text-gray-400 dark:text-gray-500'
-            }`}>
+            <span className={`text-xs font-medium shrink-0 hidden sm:block ${isOverdue ? 'text-red-500' : 'text-gray-400 dark:text-gray-500'
+              }`}>
               {isOverdue ? 'Overdue · ' : ''}{deadline.toLocaleDateString('en-GB')}
             </span>
 
@@ -81,6 +80,7 @@ export default function TaskList({ tasks, clients, onDelete, onEdit, onStatusCha
             <select
               value={task.status}
               onChange={e => onStatusChange(task.id!, e.target.value as Task['status'])}
+              onClick={e => e.stopPropagation()}
               className={`text-xs font-medium px-2.5 py-1 rounded-full border-0 focus:outline-none focus:ring-1 focus:ring-gray-900 cursor-pointer shrink-0 ${statusStyles[task.status]}`}
             >
               {statusOptions.map(s => (
@@ -91,13 +91,13 @@ export default function TaskList({ tasks, clients, onDelete, onEdit, onStatusCha
             {/* Actions */}
             <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
               <button
-                onClick={() => onEdit(task)}
+                onClick={(e) => { e.stopPropagation(); onEdit(task) }}
                 className="p-1.5 rounded-lg text-gray-300 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-all"
               >
                 <Pencil size={13} />
               </button>
               <button
-                onClick={() => onDelete(task.id!)}
+                onClick={(e) => { e.stopPropagation(); onDelete(task.id!) }}
                 className="p-1.5 rounded-lg text-gray-300 dark:text-gray-500 hover:text-red-400 transition-all"
               >
                 <Trash2 size={13} />

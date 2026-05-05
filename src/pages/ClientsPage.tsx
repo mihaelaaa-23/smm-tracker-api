@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { Plus } from 'lucide-react'
-import { clientsDB } from '../db'
+import { clientsDB, db } from '../db'
 import ClientList from '../components/clients/ClientList'
 import ClientForm from '../components/clients/ClientForm'
 import type { Client } from '../types'
@@ -74,18 +74,23 @@ export default function ClientsPage() {
   }
 
   const handleSync = async () => {
+    const ok = await confirm({
+      title: 'Sync from API?',
+      message: 'This will replace all local clients with data from the API. This cannot be undone.',
+      confirmLabel: 'Sync & Overwrite',
+      variant: 'warning',
+    })
+    if (!ok) return
+
     setSyncing(true)
     try {
       const response = await apiClients.getAll({ limit: 100 })
-      // Sync each client to local DB
+      await db.clients.clear()
       for (const client of response.data) {
-        const existing = clients.find(c => c.id === client.id)
-        if (!existing) {
-          await clientsDB.add({
-            ...client,
-            createdAt: new Date(client.createdAt),
-          })
-        }
+        await clientsDB.add({
+          ...client,
+          createdAt: new Date(client.createdAt),
+        })
       }
       qc.invalidateQueries({ queryKey: ['clients'] })
     } catch (err) {
