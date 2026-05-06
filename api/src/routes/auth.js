@@ -3,7 +3,7 @@ export default async function authRoutes(server) {
     schema: {
       tags: ['Auth'],
       summary: 'Generate JWT token',
-      description: 'Returns a JWT token with role and permissions. Token expires in 1 minute.',
+      description: 'Returns a JWT token with role and permissions. Token expires in 10 minutes.',
       body: {
         type: 'object',
         required: ['role'],
@@ -44,14 +44,14 @@ export default async function authRoutes(server) {
 
     const token = server.jwt.sign(
       { role, permissions: permissions[role] },
-      { expiresIn: '1m' }
+      { expiresIn: '10m' }
     )
 
     return reply.send({
       token,
       role,
       permissions: permissions[role],
-      expiresIn: '1 minute'
+      expiresIn: '10 minutes'
     })
   })
 }
