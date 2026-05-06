@@ -8,6 +8,7 @@ import authRoutes from './routes/auth.js'
 import clientRoutes from './routes/clients.js'
 import taskRoutes from './routes/tasks.js'
 import paymentRoutes from './routes/payments.js'
+import statsRoutes from './routes/stats.js'
 
 const server = Fastify({ logger: true })
 
@@ -70,6 +71,7 @@ await server.register(authRoutes)
 await server.register(clientRoutes)
 await server.register(taskRoutes)
 await server.register(paymentRoutes)
+await server.register(statsRoutes)
 
 // Health check
 server.get('/health', {

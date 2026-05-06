@@ -3,15 +3,14 @@ export default async function authRoutes(server) {
     schema: {
       tags: ['Auth'],
       summary: 'Generate JWT token',
-      description: 'Returns a JWT token with role and permissions. Token expires in 10 minutes.',
-      body: {
+      description: 'Returns a JWT token with role and permissions. Token expires in 10 minutes.\n\n**Available roles:**\n\n| Role | Permissions | Access |\n|------|-------------|--------|\n| ADMIN | READ, WRITE, DELETE | Full access |\n| WRITER | READ, WRITE | Read and write |\n| VISITOR | READ | Read only |\n| VIEWER | STATS | Dashboard stats only |', body: {
         type: 'object',
         required: ['role'],
         properties: {
           role: {
             type: 'string',
-            enum: ['ADMIN', 'WRITER', 'VISITOR'],
-            description: 'ADMIN: full access, WRITER: read+write, VISITOR: read only'
+            enum: ['ADMIN', 'WRITER', 'VISITOR', 'VIEWER'],
+            description: 'ADMIN: full access, WRITER: read+write, VISITOR: read only, VIEWER: stats only'
           }
         }
       },
@@ -40,6 +39,7 @@ export default async function authRoutes(server) {
       ADMIN: ['READ', 'WRITE', 'DELETE'],
       WRITER: ['READ', 'WRITE'],
       VISITOR: ['READ'],
+      VIEWER: ['STATS'],
     }
 
     const token = server.jwt.sign(
